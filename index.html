@@ -1,321 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>McKesson Brands – Level 2 Prioritization</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>McKesson Brands – Level 2 Prioritization</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;padding:16px;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:8px 9px;text-align:left;white-space:nowrap;font-weight:600;user-select:none;cursor:pointer;background:#1e293b;position:sticky;top:0;z-index:2}
+td{padding:6px 9px;border-bottom:1px solid #1e293b}
+.tier-badge{border-radius:10px;padding:2px 7px;font-weight:700;color:#fff;font-size:10px}
+.tab-btn{padding:7px 15px;background:none;border:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent}
+.ctrl-btn{padding:4px 13px;border-radius:20px;border:none;font-size:12px;font-weight:600}
+.card{background:#1e293b;border-radius:7px;padding:8px 11px}
+.chart-wrap{background:#1e293b;border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.tooltip{position:absolute;background:#0f172a;border:1px solid #475569;border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:10;max-width:220px;display:none}
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-const { useState, useMemo } = React;
-const { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
-        ReferenceLine, ResponsiveContainer, Cell, BarChart, Bar, Legend } = Recharts;
 
-const RAW = [
-  {n:"Ancillary Nursing Supplies",pen:58,cov:49,mkt:734,mktG:5,mmsShare:8.7,mmsGP:23,mmsGPpct:38,mmsGrowth:1.6,mbSales:35.1,mbGP:23.4,mbGPpct:66.8,mbG:2.4,mbOutMMS:0.8,mmsOutMkt:-3.4,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Anesthesia & Suction",pen:29,cov:29,mkt:765,mktG:7,mmsShare:8.4,mmsGP:26,mmsGPpct:33,mmsGrowth:1.0,mbSales:23.2,mbGP:13.6,mbGPpct:58.6,mbG:3.5,mbOutMMS:2.5,mmsOutMkt:-5.8,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Beds and Patient Safety",pen:10,cov:30,mkt:1023,mktG:12,mmsShare:4.6,mmsGP:9,mmsGPpct:21,mmsGrowth:11.4,mbSales:4.3,mbGP:2.2,mbGPpct:49.8,mbG:12.0,mbOutMMS:0.6,mmsOutMkt:-0.4,f1:"Reassessment",f2:"MB Champion",tier:1},
-  {n:"Compression",pen:28,cov:22,mkt:48,mktG:2,mmsShare:11.0,mmsGP:2,mmsGPpct:33,mmsGrowth:1.0,mbSales:1.7,mbGP:0.8,mbGPpct:50.7,mbG:-4.9,mbOutMMS:-5.9,mmsOutMkt:-1.0,f1:"Selective Winner",f2:"Eval Candidate",tier:4},
-  {n:"Containers",pen:43,cov:78,mkt:165,mktG:2,mmsShare:29.0,mmsGP:16,mmsGPpct:30,mmsGrowth:-0.5,mbSales:22.7,mbGP:11.8,mbGPpct:52.1,mbG:3.3,mbOutMMS:3.8,mmsOutMkt:-2.5,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Diagnostic Cardiology",pen:21,cov:17,mkt:218,mktG:12,mmsShare:10.5,mmsGP:4,mmsGPpct:15,mmsGrowth:-6.9,mbSales:4.9,mbGP:1.4,mbGPpct:28.4,mbG:-8.8,mbOutMMS:-1.9,mmsOutMkt:-19.3,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
-  {n:"Diagnostic Disposables",pen:32,cov:24,mkt:1037,mktG:4,mmsShare:12.8,mmsGP:49,mmsGPpct:35,mmsGrowth:-1.2,mbSales:46.5,mbGP:31.2,mbGPpct:67.1,mbG:-3.9,mbOutMMS:-2.7,mmsOutMkt:-4.8,f1:"Selective Winner",f2:"Eval Candidate",tier:2},
-  {n:"Diagnostic Imaging",pen:14,cov:25,mkt:113,mktG:9,mmsShare:16.2,mmsGP:3,mmsGPpct:17,mmsGrowth:-7.3,mbSales:2.6,mbGP:1.0,mbGPpct:39.2,mbG:4.8,mbOutMMS:12.2,mmsOutMkt:-16.3,f1:"Reassessment",f2:"MB Champion",tier:4},
-  {n:"Disposable Underwear",pen:23,cov:29,mkt:745,mktG:3,mmsShare:27.1,mmsGP:34,mmsGPpct:17,mmsGrowth:3.5,mbSales:45.5,mbGP:17.4,mbGPpct:38.2,mbG:6.2,mbOutMMS:2.7,mmsOutMkt:0.4,f1:"Reassessment",f2:"Strategy Star",tier:2},
-  {n:"Durable Medical Equipment",pen:60,cov:64,mkt:545,mktG:5,mmsShare:6.2,mmsGP:12,mmsGPpct:30,mmsGrowth:-3.9,mbSales:25.2,mbGP:11.4,mbGPpct:45.0,mbG:-5.7,mbOutMMS:-1.8,mmsOutMkt:-8.4,f1:"Assortment Leader",f2:"Eval Candidate",tier:4},
-  {n:"Exam & Patient Room Furn.",pen:8,cov:20,mkt:495,mktG:3,mmsShare:11.9,mmsGP:11,mmsGPpct:18,mmsGrowth:-5.8,mbSales:5.3,mbGP:2.2,mbGPpct:40.8,mbG:-17.9,mbOutMMS:-12.1,mmsOutMkt:-8.9,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
-  {n:"Exam Tables",pen:1,cov:25,mkt:274,mktG:-5,mmsShare:28.2,mmsGP:10,mmsGPpct:12,mmsGrowth:-7.4,mbSales:1.2,mbGP:0.4,mbGPpct:29.8,mbG:-11.7,mbOutMMS:-4.4,mmsOutMkt:-2.3,f1:"Reassessment",f2:"Eval Candidate",tier:4},
-  {n:"Feeding Supplies",pen:3,cov:13,mkt:578,mktG:9,mmsShare:33.8,mmsGP:36,mmsGPpct:14,mmsGrowth:9.9,mbSales:8.5,mbGP:4.7,mbGPpct:55.9,mbG:2.8,mbOutMMS:-7.0,mmsOutMkt:0.4,f1:"Untapped Potential",f2:"Oppty Gap",tier:1},
-  {n:"Food Service Disposables",pen:67,cov:50,mkt:162,mktG:3,mmsShare:24.4,mmsGP:14,mmsGPpct:32,mmsGrowth:-5.8,mbSales:27.7,mbGP:15.7,mbGPpct:56.6,mbG:-0.2,mbOutMMS:5.6,mmsOutMkt:-8.6,f1:"Assortment Leader",f2:"MB Champion",tier:4},
-  {n:"Food Supplements",pen:0,cov:10,mkt:1553,mktG:6,mmsShare:47.3,mmsGP:101,mmsGPpct:12,mmsGrowth:11.8,mbSales:0.1,mbGP:0.0,mbGPpct:67.6,mbG:51.3,mbOutMMS:39.4,mmsOutMkt:5.4,f1:"Untapped Potential",f2:"Strategy Star",tier:1},
-  {n:"Gauze",pen:76,cov:67,mkt:362,mktG:2,mmsShare:19.4,mmsGP:31,mmsGPpct:40,mmsGrowth:-3.1,mbSales:59.0,mbGP:42.1,mbGPpct:71.4,mbG:-2.6,mbOutMMS:0.5,mmsOutMkt:-5.5,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Gloves",pen:85,cov:31,mkt:2888,mktG:-8,mmsShare:11.2,mmsGP:141,mmsGPpct:36,mmsGrowth:-21.8,mbSales:332.6,mbGP:210.1,mbGPpct:63.2,mbG:-23.6,mbOutMMS:-1.8,mmsOutMkt:-13.6,f1:"Assortment Leader",f2:"Eval Candidate",tier:3},
-  {n:"Hand Hygiene",pen:44,cov:77,mkt:377,mktG:5,mmsShare:9.4,mmsGP:11,mmsGPpct:32,mmsGrowth:3.7,mbSales:14.6,mbGP:8.3,mbGPpct:57.0,mbG:10.1,mbOutMMS:6.3,mmsOutMkt:-1.7,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Housekeeping",pen:33,cov:35,mkt:755,mktG:9,mmsShare:10.5,mmsGP:25,mmsGPpct:30,mmsGrowth:-0.9,mbSales:25.9,mbGP:12.7,mbGPpct:49.1,mbG:13.1,mbOutMMS:14.0,mmsOutMkt:-10.1,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Inco Wipes",pen:63,cov:75,mkt:440,mktG:3,mmsShare:17.6,mmsGP:23,mmsGPpct:28,mmsGrowth:1.9,mbSales:49.2,mbGP:28.1,mbGPpct:57.1,mbG:3.5,mbOutMMS:1.6,mmsOutMkt:-1.5,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Incontinence Briefs",pen:24,cov:33,mkt:868,mktG:5,mmsShare:31.8,mmsGP:48,mmsGPpct:18,mmsGrowth:5.6,mbSales:66.0,mbGP:23.7,mbGPpct:35.9,mbG:9.4,mbOutMMS:3.8,mmsOutMkt:0.8,f1:"Reassessment",f2:"Strategy Star",tier:1},
-  {n:"IV Therapy",pen:8,cov:17,mkt:6323,mktG:8,mmsShare:8.6,mmsGP:178,mmsGPpct:25,mmsGrowth:6.3,mbSales:50.5,mbGP:25.4,mbGPpct:50.3,mbG:20.9,mbOutMMS:14.5,mmsOutMkt:-1.3,f1:"Untapped Potential",f2:"MB Champion",tier:1},
-  {n:"Kits, Custom & Standard",pen:16,cov:28,mkt:4581,mktG:7,mmsShare:2.5,mmsGP:27,mmsGPpct:21,mmsGrowth:0.0,mbSales:21.4,mbGP:11.1,mbGPpct:51.9,mbG:-0.2,mbOutMMS:-0.2,mmsOutMkt:-7.3,f1:"Reassessment",f2:"Eval Candidate",tier:3},
-  {n:"Lab-Blood Glucose",pen:29,cov:57,mkt:258,mktG:3,mmsShare:34.4,mmsGP:20,mmsGPpct:22,mmsGrowth:9.8,mbSales:23.7,mbGP:15.2,mbGPpct:64.0,mbG:6.9,mbOutMMS:-2.8,mmsOutMkt:6.5,f1:"Assortment Leader",f2:"Oppty Gap",tier:1},
-  {n:"Lab-General Lab Equip.",pen:11,cov:27,mkt:313,mktG:5,mmsShare:8.2,mmsGP:7,mmsGPpct:26,mmsGrowth:-1.9,mbSales:3.3,mbGP:1.4,mbGPpct:43.5,mbG:-0.1,mbOutMMS:1.8,mmsOutMkt:-7.3,f1:"Reassessment",f2:"MB Champion",tier:4},
-  {n:"Lab-Instrument Driven",pen:5,cov:15,mkt:638,mktG:3,mmsShare:42.3,mmsGP:70,mmsGPpct:26,mmsGrowth:2.3,mbSales:12.9,mbGP:8.5,mbGPpct:65.4,mbG:1.7,mbOutMMS:-0.6,mmsOutMkt:-0.9,f1:"Untapped Potential",f2:"Eval Candidate",tier:1},
-  {n:"Lab-Lab Supplies",pen:10,cov:44,mkt:499,mktG:2,mmsShare:6.1,mmsGP:13,mmsGPpct:37,mmsGrowth:6.8,mbSales:3.5,mbGP:2.4,mbGPpct:68.4,mbG:3.4,mbOutMMS:-3.4,mmsOutMkt:4.6,f1:"Reassessment",f2:"Oppty Gap",tier:2},
-  {n:"Lab-Rapids",pen:51,cov:29,mkt:207,mktG:8,mmsShare:26.2,mmsGP:19,mmsGPpct:35,mmsGrowth:2.2,mbSales:26.4,mbGP:14.7,mbGPpct:55.9,mbG:4.4,mbOutMMS:2.2,mmsOutMkt:-5.4,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Lab-Respiratory Testing",pen:7,cov:11,mkt:2404,mktG:-16,mmsShare:38.3,mmsGP:212,mmsGPpct:20,mmsGrowth:-15.2,mbSales:74.4,mbGP:36.1,mbGPpct:48.6,mbG:0.9,mbOutMMS:16.1,mmsOutMkt:0.7,f1:"Untapped Potential",f2:"Strategy Star",tier:1},
-  {n:"Lab-Specimen Collection",pen:23,cov:78,mkt:1295,mktG:6,mmsShare:10.5,mmsGP:40,mmsGPpct:30,mmsGrowth:4.9,mbSales:28.4,mbGP:18.5,mbGPpct:64.9,mbG:6.5,mbOutMMS:1.6,mmsOutMkt:-1.0,f1:"Reassessment",f2:"MB Champion",tier:1},
-  {n:"Needles & Syringes",pen:28,cov:47,mkt:1080,mktG:8,mmsShare:21.3,mmsGP:79,mmsGPpct:34,mmsGrowth:3.4,mbSales:86.0,mbGP:54.5,mbGPpct:63.4,mbG:-12.4,mbOutMMS:-15.8,mmsOutMkt:-4.4,f1:"Assortment Leader",f2:"Eval Candidate",tier:1},
-  {n:"Office Supplies",pen:6,cov:11,mkt:101,mktG:8,mmsShare:0.0,mmsGP:9,mmsGPpct:30,mmsGrowth:-1.4,mbSales:1.3,mbGP:0.8,mbGPpct:60.4,mbG:0.0,mbOutMMS:1.4,mmsOutMkt:-9.5,f1:"Untapped Potential",f2:"MB Champion",tier:3},
-  {n:"Orthopedics",pen:26,cov:30,mkt:575,mktG:3,mmsShare:14.2,mmsGP:27,mmsGPpct:31,mmsGrowth:-2.0,mbSales:21.4,mbGP:11.4,mbGPpct:53.1,mbG:8.4,mbOutMMS:10.4,mmsOutMkt:-4.6,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Ostomy",pen:1,cov:12,mkt:309,mktG:2,mmsShare:27.5,mmsGP:12,mmsGPpct:14,mmsGrowth:-2.1,mbSales:0.4,mbGP:0.2,mbGPpct:61.3,mbG:11.1,mbOutMMS:13.1,mmsOutMkt:-4.1,f1:"Untapped Potential",f2:"MB Champion",tier:2},
-  {n:"Patient Assessment/Mon.",pen:15,cov:23,mkt:2094,mktG:4,mmsShare:8.7,mmsGP:43,mmsGPpct:22,mmsGrowth:-3.6,mbSales:28.1,mbGP:14.0,mbGPpct:49.9,mbG:-3.6,mbOutMMS:0.0,mmsOutMkt:-7.2,f1:"Untapped Potential",f2:"MB Champion",tier:3},
-  {n:"Personal Care",pen:19,cov:47,mkt:518,mktG:7,mmsShare:11.7,mmsGP:16,mmsGPpct:26,mmsGrowth:16.3,mbSales:12.2,mbGP:6.7,mbGPpct:55.0,mbG:8.0,mbOutMMS:-8.3,mmsOutMkt:9.5,f1:"Reassessment",f2:"Oppty Gap",tier:1},
-  {n:"Personal Protective Equip.",pen:42,cov:28,mkt:1151,mktG:-6,mmsShare:6.9,mmsGP:32,mmsGPpct:35,mmsGrowth:-24.7,mbSales:39.3,mbGP:26.9,mbGPpct:68.4,mbG:-30.7,mbOutMMS:-6.0,mmsOutMkt:-19.0,f1:"Assortment Leader",f2:"Eval Candidate",tier:3},
-  {n:"Procedure Equip. (Sterilize)",pen:4,cov:20,mkt:87,mktG:5,mmsShare:28.5,mmsGP:5,mmsGPpct:19,mmsGrowth:-0.7,mbSales:0.9,mbGP:0.2,mbGPpct:28.0,mbG:-1.6,mbOutMMS:-1.0,mmsOutMkt:-6.0,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
-  {n:"Respiratory Therapy",pen:9,cov:13,mkt:1236,mktG:5,mmsShare:10.7,mmsGP:32,mmsGPpct:24,mmsGrowth:5.6,mbSales:11.5,mbGP:6.6,mbGPpct:57.1,mbG:5.0,mbOutMMS:-0.5,mmsOutMkt:0.6,f1:"Untapped Potential",f2:"Oppty Gap",tier:1},
-  {n:"Rx - Asthma",pen:10,cov:50,mkt:69,mktG:4,mmsShare:23.8,mmsGP:5,mmsGPpct:22,mmsGrowth:-1.6,mbSales:2.6,mbGP:1.2,mbGPpct:44.7,mbG:1.8,mbOutMMS:3.5,mmsOutMkt:-5.9,f1:"Reassessment",f2:"MB Champion",tier:4},
-  {n:"Rx-Otc And Topicals",pen:19,cov:85,mkt:555,mktG:1,mmsShare:13.6,mmsGP:42,mmsGPpct:33,mmsGrowth:4.6,mbSales:25.1,mbGP:13.6,mbGPpct:54.3,mbG:-2.0,mbOutMMS:-6.6,mmsOutMkt:3.4,f1:"Reassessment",f2:"Oppty Gap",tier:3},
-  {n:"Rx-Ulcer Drugs",pen:3,cov:100,mkt:3,mktG:23,mmsShare:34.4,mmsGP:2,mmsGPpct:42,mmsGrowth:-11.0,mbSales:0.0,mbGP:0.0,mbGPpct:67.1,mbG:0.0,mbOutMMS:11.0,mmsOutMkt:-33.7,f1:"Reassessment",f2:"MB Champion",tier:3},
-  {n:"Skin & Surgical Prep",pen:42,cov:56,mkt:966,mktG:8,mmsShare:5.6,mmsGP:20,mmsGPpct:32,mmsGrowth:6.5,mbSales:26.3,mbGP:15.7,mbGPpct:59.6,mbG:2.3,mbOutMMS:-4.2,mmsOutMkt:-1.1,f1:"Assortment Leader",f2:"Eval Candidate",tier:2},
-  {n:"Skin Care",pen:47,cov:48,mkt:417,mktG:6,mmsShare:13.7,mmsGP:18,mmsGPpct:30,mmsGrowth:4.0,mbSales:27.0,mbGP:13.2,mbGPpct:48.8,mbG:6.9,mbOutMMS:3.0,mmsOutMkt:-2.0,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Specialty Dressings",pen:26,cov:40,mkt:2102,mktG:6,mmsShare:10.3,mmsGP:64,mmsGPpct:28,mmsGrowth:2.0,mbSales:59.2,mbGP:40.3,mbGPpct:68.1,mbG:1.4,mbOutMMS:-0.6,mmsOutMkt:-4.5,f1:"Assortment Leader",f2:"Eval Candidate",tier:1},
-  {n:"Sterile Drapes & Gowns",pen:40,cov:33,mkt:578,mktG:5,mmsShare:3.9,mmsGP:8,mmsGPpct:32,mmsGrowth:-4.3,mbSales:8.2,mbGP:4.5,mbGPpct:55.6,mbG:16.3,mbOutMMS:20.6,mmsOutMkt:-9.2,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Sterilization",pen:40,cov:30,mkt:735,mktG:-4,mmsShare:8.2,mmsGP:21,mmsGPpct:35,mmsGrowth:-2.6,mbSales:23.2,mbGP:12.9,mbGPpct:55.4,mbG:0.9,mbOutMMS:3.5,mmsOutMkt:1.6,f1:"Assortment Leader",f2:"Strategy Star",tier:4},
-  {n:"Surface Disinfection",pen:12,cov:50,mkt:765,mktG:7,mmsShare:10.6,mmsGP:25,mmsGPpct:29,mmsGrowth:5.0,mbSales:10.0,mbGP:4.9,mbGPpct:49.0,mbG:4.3,mbOutMMS:-0.6,mmsOutMkt:-2.1,f1:"Reassessment",f2:"Eval Candidate",tier:2},
-  {n:"Surgical Disposables",pen:10,cov:17,mkt:773,mktG:3,mmsShare:3.5,mmsGP:9,mmsGPpct:31,mmsGrowth:-3.5,mbSales:3.0,mbGP:1.8,mbGPpct:60.1,mbG:-6.8,mbOutMMS:-3.4,mmsOutMkt:-6.4,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
-  {n:"Surgical Equip./Accessories",pen:34,cov:31,mkt:843,mktG:15,mmsShare:3.6,mmsGP:11,mmsGPpct:35,mmsGrowth:-0.8,mbSales:9.7,mbGP:4.5,mbGPpct:46.5,mbG:6.4,mbOutMMS:7.1,mmsOutMkt:-15.4,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Surgical Instruments",pen:28,cov:17,mkt:1772,mktG:3,mmsShare:5.6,mmsGP:34,mmsGPpct:34,mmsGrowth:1.1,mbSales:28.1,mbGP:18.4,mbGPpct:65.4,mbG:1.6,mbOutMMS:0.5,mmsOutMkt:-1.8,f1:"Selective Winner",f2:"MB Champion",tier:2},
-  {n:"Table Paper",pen:94,cov:100,mkt:109,mktG:7,mmsShare:41.5,mmsGP:16,mmsGPpct:36,mmsGrowth:3.0,mbSales:41.8,mbGP:16.3,mbGPpct:39.0,mbG:3.3,mbOutMMS:0.3,mmsOutMkt:-4.1,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Tapes/Wraps",pen:58,cov:41,mkt:568,mktG:2,mmsShare:13.2,mmsGP:30,mmsGPpct:37,mmsGrowth:-1.2,mbSales:44.4,mbGP:32.2,mbGPpct:72.6,mbG:3.6,mbOutMMS:4.8,mmsOutMkt:-3.0,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Textiles",pen:71,cov:25,mkt:1039,mktG:8,mmsShare:7.2,mmsGP:29,mmsGPpct:37,mmsGrowth:-2.1,mbSales:52.8,mbGP:28.7,mbGPpct:54.4,mbG:0.8,mbOutMMS:2.9,mmsOutMkt:-10.3,f1:"Assortment Leader",f2:"MB Champion",tier:3},
-  {n:"Underpads, Pads & Liners",pen:40,cov:33,mkt:943,mktG:4,mmsShare:15.5,mmsGP:32,mmsGPpct:22,mmsGrowth:1.4,mbSales:57.6,mbGP:27.3,mbGPpct:47.4,mbG:4.3,mbOutMMS:2.8,mmsOutMkt:-2.3,f1:"Assortment Leader",f2:"MB Champion",tier:2},
-  {n:"Urology",pen:11,cov:20,mkt:1240,mktG:11,mmsShare:9.6,mmsGP:26,mmsGPpct:21,mmsGrowth:5.8,mbSales:12.3,mbGP:8.2,mbGPpct:66.9,mbG:10.9,mbOutMMS:5.2,mmsOutMkt:-5.7,f1:"Untapped Potential",f2:"MB Champion",tier:1},
-  {n:"Wound Closure",pen:21,cov:20,mkt:2715,mktG:1,mmsShare:4.5,mmsGP:38,mmsGPpct:29,mmsGrowth:-2.7,mbSales:24.7,mbGP:14.7,mbGPpct:59.7,mbG:4.8,mbOutMMS:7.5,mmsOutMkt:-3.5,f1:"Untapped Potential",f2:"MB Champion",tier:2},
+<div style="margin-bottom:14px">
+  <div style="font-size:19px;font-weight:800;color:#f8fafc">McKesson Brands — Level 2 Category Prioritization</div>
+  <div style="font-size:12px;color:#64748b;margin-top:2px">Project Moneyball · 57 categories · FY23–25</div>
+</div>
+
+<div id="controls" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center"></div>
+<div id="tabs" style="display:flex;gap:1px;margin-bottom:12px;border-bottom:1px solid #1e293b"></div>
+<div id="legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px"></div>
+<div id="content"></div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const RAW=[
+  {n:"Ancillary Nursing Supplies",pen:58,cov:49,mkt:734,mktG:5,mmsGP:23,mbGP:23.4,mbGPpct:66.8,mbG:2.4,mbOutMMS:0.8,mmsOutMkt:-3.4,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Anesthesia & Suction",pen:29,cov:29,mkt:765,mktG:7,mmsGP:26,mbGP:13.6,mbGPpct:58.6,mbG:3.5,mbOutMMS:2.5,mmsOutMkt:-5.8,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Beds and Patient Safety",pen:10,cov:30,mkt:1023,mktG:12,mmsGP:9,mbGP:2.2,mbGPpct:49.8,mbG:12.0,mbOutMMS:0.6,mmsOutMkt:-0.4,f1:"Reassessment",f2:"MB Champion",tier:1},
+  {n:"Compression",pen:28,cov:22,mkt:48,mktG:2,mmsGP:2,mbGP:0.8,mbGPpct:50.7,mbG:-4.9,mbOutMMS:-5.9,mmsOutMkt:-1.0,f1:"Selective Winner",f2:"Eval Candidate",tier:4},
+  {n:"Containers",pen:43,cov:78,mkt:165,mktG:2,mmsGP:16,mbGP:11.8,mbGPpct:52.1,mbG:3.3,mbOutMMS:3.8,mmsOutMkt:-2.5,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Diagnostic Cardiology",pen:21,cov:17,mkt:218,mktG:12,mmsGP:4,mbGP:1.4,mbGPpct:28.4,mbG:-8.8,mbOutMMS:-1.9,mmsOutMkt:-19.3,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
+  {n:"Diagnostic Disposables",pen:32,cov:24,mkt:1037,mktG:4,mmsGP:49,mbGP:31.2,mbGPpct:67.1,mbG:-3.9,mbOutMMS:-2.7,mmsOutMkt:-4.8,f1:"Selective Winner",f2:"Eval Candidate",tier:2},
+  {n:"Diagnostic Imaging",pen:14,cov:25,mkt:113,mktG:9,mmsGP:3,mbGP:1.0,mbGPpct:39.2,mbG:4.8,mbOutMMS:12.2,mmsOutMkt:-16.3,f1:"Reassessment",f2:"MB Champion",tier:4},
+  {n:"Disposable Underwear",pen:23,cov:29,mkt:745,mktG:3,mmsGP:34,mbGP:17.4,mbGPpct:38.2,mbG:6.2,mbOutMMS:2.7,mmsOutMkt:0.4,f1:"Reassessment",f2:"Strategy Star",tier:2},
+  {n:"Durable Medical Equipment",pen:60,cov:64,mkt:545,mktG:5,mmsGP:12,mbGP:11.4,mbGPpct:45.0,mbG:-5.7,mbOutMMS:-1.8,mmsOutMkt:-8.4,f1:"Assortment Leader",f2:"Eval Candidate",tier:4},
+  {n:"Exam & Patient Room Furn.",pen:8,cov:20,mkt:495,mktG:3,mmsGP:11,mbGP:2.2,mbGPpct:40.8,mbG:-17.9,mbOutMMS:-12.1,mmsOutMkt:-8.9,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
+  {n:"Exam Tables",pen:1,cov:25,mkt:274,mktG:-5,mmsGP:10,mbGP:0.4,mbGPpct:29.8,mbG:-11.7,mbOutMMS:-4.4,mmsOutMkt:-2.3,f1:"Reassessment",f2:"Eval Candidate",tier:4},
+  {n:"Feeding Supplies",pen:3,cov:13,mkt:578,mktG:9,mmsGP:36,mbGP:4.7,mbGPpct:55.9,mbG:2.8,mbOutMMS:-7.0,mmsOutMkt:0.4,f1:"Untapped Potential",f2:"Oppty Gap",tier:1},
+  {n:"Food Service Disposables",pen:67,cov:50,mkt:162,mktG:3,mmsGP:14,mbGP:15.7,mbGPpct:56.6,mbG:-0.2,mbOutMMS:5.6,mmsOutMkt:-8.6,f1:"Assortment Leader",f2:"MB Champion",tier:4},
+  {n:"Food Supplements",pen:0,cov:10,mkt:1553,mktG:6,mmsGP:101,mbGP:0.0,mbGPpct:67.6,mbG:51.3,mbOutMMS:39.4,mmsOutMkt:5.4,f1:"Untapped Potential",f2:"Strategy Star",tier:1},
+  {n:"Gauze",pen:76,cov:67,mkt:362,mktG:2,mmsGP:31,mbGP:42.1,mbGPpct:71.4,mbG:-2.6,mbOutMMS:0.5,mmsOutMkt:-5.5,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Gloves",pen:85,cov:31,mkt:2888,mktG:-8,mmsGP:141,mbGP:210.1,mbGPpct:63.2,mbG:-23.6,mbOutMMS:-1.8,mmsOutMkt:-13.6,f1:"Assortment Leader",f2:"Eval Candidate",tier:3},
+  {n:"Hand Hygiene",pen:44,cov:77,mkt:377,mktG:5,mmsGP:11,mbGP:8.3,mbGPpct:57.0,mbG:10.1,mbOutMMS:6.3,mmsOutMkt:-1.7,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Housekeeping",pen:33,cov:35,mkt:755,mktG:9,mmsGP:25,mbGP:12.7,mbGPpct:49.1,mbG:13.1,mbOutMMS:14.0,mmsOutMkt:-10.1,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Inco Wipes",pen:63,cov:75,mkt:440,mktG:3,mmsGP:23,mbGP:28.1,mbGPpct:57.1,mbG:3.5,mbOutMMS:1.6,mmsOutMkt:-1.5,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Incontinence Briefs",pen:24,cov:33,mkt:868,mktG:5,mmsGP:48,mbGP:23.7,mbGPpct:35.9,mbG:9.4,mbOutMMS:3.8,mmsOutMkt:0.8,f1:"Reassessment",f2:"Strategy Star",tier:1},
+  {n:"IV Therapy",pen:8,cov:17,mkt:6323,mktG:8,mmsGP:178,mbGP:25.4,mbGPpct:50.3,mbG:20.9,mbOutMMS:14.5,mmsOutMkt:-1.3,f1:"Untapped Potential",f2:"MB Champion",tier:1},
+  {n:"Kits, Custom & Standard",pen:16,cov:28,mkt:4581,mktG:7,mmsGP:27,mbGP:11.1,mbGPpct:51.9,mbG:-0.2,mbOutMMS:-0.2,mmsOutMkt:-7.3,f1:"Reassessment",f2:"Eval Candidate",tier:3},
+  {n:"Lab-Blood Glucose",pen:29,cov:57,mkt:258,mktG:3,mmsGP:20,mbGP:15.2,mbGPpct:64.0,mbG:6.9,mbOutMMS:-2.8,mmsOutMkt:6.5,f1:"Assortment Leader",f2:"Oppty Gap",tier:1},
+  {n:"Lab-General Lab Equip.",pen:11,cov:27,mkt:313,mktG:5,mmsGP:7,mbGP:1.4,mbGPpct:43.5,mbG:-0.1,mbOutMMS:1.8,mmsOutMkt:-7.3,f1:"Reassessment",f2:"MB Champion",tier:4},
+  {n:"Lab-Instrument Driven",pen:5,cov:15,mkt:638,mktG:3,mmsGP:70,mbGP:8.5,mbGPpct:65.4,mbG:1.7,mbOutMMS:-0.6,mmsOutMkt:-0.9,f1:"Untapped Potential",f2:"Eval Candidate",tier:1},
+  {n:"Lab-Lab Supplies",pen:10,cov:44,mkt:499,mktG:2,mmsGP:13,mbGP:2.4,mbGPpct:68.4,mbG:3.4,mbOutMMS:-3.4,mmsOutMkt:4.6,f1:"Reassessment",f2:"Oppty Gap",tier:2},
+  {n:"Lab-Rapids",pen:51,cov:29,mkt:207,mktG:8,mmsGP:19,mbGP:14.7,mbGPpct:55.9,mbG:4.4,mbOutMMS:2.2,mmsOutMkt:-5.4,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Lab-Respiratory Testing",pen:7,cov:11,mkt:2404,mktG:-16,mmsGP:212,mbGP:36.1,mbGPpct:48.6,mbG:0.9,mbOutMMS:16.1,mmsOutMkt:0.7,f1:"Untapped Potential",f2:"Strategy Star",tier:1},
+  {n:"Lab-Specimen Collection",pen:23,cov:78,mkt:1295,mktG:6,mmsGP:40,mbGP:18.5,mbGPpct:64.9,mbG:6.5,mbOutMMS:1.6,mmsOutMkt:-1.0,f1:"Reassessment",f2:"MB Champion",tier:1},
+  {n:"Needles & Syringes",pen:28,cov:47,mkt:1080,mktG:8,mmsGP:79,mbGP:54.5,mbGPpct:63.4,mbG:-12.4,mbOutMMS:-15.8,mmsOutMkt:-4.4,f1:"Assortment Leader",f2:"Eval Candidate",tier:1},
+  {n:"Office Supplies",pen:6,cov:11,mkt:101,mktG:8,mmsGP:9,mbGP:0.8,mbGPpct:60.4,mbG:0.0,mbOutMMS:1.4,mmsOutMkt:-9.5,f1:"Untapped Potential",f2:"MB Champion",tier:3},
+  {n:"Orthopedics",pen:26,cov:30,mkt:575,mktG:3,mmsGP:27,mbGP:11.4,mbGPpct:53.1,mbG:8.4,mbOutMMS:10.4,mmsOutMkt:-4.6,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Ostomy",pen:1,cov:12,mkt:309,mktG:2,mmsGP:12,mbGP:0.2,mbGPpct:61.3,mbG:11.1,mbOutMMS:13.1,mmsOutMkt:-4.1,f1:"Untapped Potential",f2:"MB Champion",tier:2},
+  {n:"Patient Assessment/Mon.",pen:15,cov:23,mkt:2094,mktG:4,mmsGP:43,mbGP:14.0,mbGPpct:49.9,mbG:-3.6,mbOutMMS:0.0,mmsOutMkt:-7.2,f1:"Untapped Potential",f2:"MB Champion",tier:3},
+  {n:"Personal Care",pen:19,cov:47,mkt:518,mktG:7,mmsGP:16,mbGP:6.7,mbGPpct:55.0,mbG:8.0,mbOutMMS:-8.3,mmsOutMkt:9.5,f1:"Reassessment",f2:"Oppty Gap",tier:1},
+  {n:"Personal Protective Equip.",pen:42,cov:28,mkt:1151,mktG:-6,mmsGP:32,mbGP:26.9,mbGPpct:68.4,mbG:-30.7,mbOutMMS:-6.0,mmsOutMkt:-19.0,f1:"Assortment Leader",f2:"Eval Candidate",tier:3},
+  {n:"Procedure Equip.",pen:4,cov:20,mkt:87,mktG:5,mmsGP:5,mbGP:0.2,mbGPpct:28.0,mbG:-1.6,mbOutMMS:-1.0,mmsOutMkt:-6.0,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
+  {n:"Respiratory Therapy",pen:9,cov:13,mkt:1236,mktG:5,mmsGP:32,mbGP:6.6,mbGPpct:57.1,mbG:5.0,mbOutMMS:-0.5,mmsOutMkt:0.6,f1:"Untapped Potential",f2:"Oppty Gap",tier:1},
+  {n:"Rx - Asthma",pen:10,cov:50,mkt:69,mktG:4,mmsGP:5,mbGP:1.2,mbGPpct:44.7,mbG:1.8,mbOutMMS:3.5,mmsOutMkt:-5.9,f1:"Reassessment",f2:"MB Champion",tier:4},
+  {n:"Rx-Otc And Topicals",pen:19,cov:85,mkt:555,mktG:1,mmsGP:42,mbGP:13.6,mbGPpct:54.3,mbG:-2.0,mbOutMMS:-6.6,mmsOutMkt:3.4,f1:"Reassessment",f2:"Oppty Gap",tier:3},
+  {n:"Skin & Surgical Prep",pen:42,cov:56,mkt:966,mktG:8,mmsGP:20,mbGP:15.7,mbGPpct:59.6,mbG:2.3,mbOutMMS:-4.2,mmsOutMkt:-1.1,f1:"Assortment Leader",f2:"Eval Candidate",tier:2},
+  {n:"Skin Care",pen:47,cov:48,mkt:417,mktG:6,mmsGP:18,mbGP:13.2,mbGPpct:48.8,mbG:6.9,mbOutMMS:3.0,mmsOutMkt:-2.0,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Specialty Dressings",pen:26,cov:40,mkt:2102,mktG:6,mmsGP:64,mbGP:40.3,mbGPpct:68.1,mbG:1.4,mbOutMMS:-0.6,mmsOutMkt:-4.5,f1:"Assortment Leader",f2:"Eval Candidate",tier:1},
+  {n:"Sterile Drapes & Gowns",pen:40,cov:33,mkt:578,mktG:5,mmsGP:8,mbGP:4.5,mbGPpct:55.6,mbG:16.3,mbOutMMS:20.6,mmsOutMkt:-9.2,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Sterilization",pen:40,cov:30,mkt:735,mktG:-4,mmsGP:21,mbGP:12.9,mbGPpct:55.4,mbG:0.9,mbOutMMS:3.5,mmsOutMkt:1.6,f1:"Assortment Leader",f2:"Strategy Star",tier:4},
+  {n:"Surface Disinfection",pen:12,cov:50,mkt:765,mktG:7,mmsGP:25,mbGP:4.9,mbGPpct:49.0,mbG:4.3,mbOutMMS:-0.6,mmsOutMkt:-2.1,f1:"Reassessment",f2:"Eval Candidate",tier:2},
+  {n:"Surgical Disposables",pen:10,cov:17,mkt:773,mktG:3,mmsGP:9,mbGP:1.8,mbGPpct:60.1,mbG:-6.8,mbOutMMS:-3.4,mmsOutMkt:-6.4,f1:"Untapped Potential",f2:"Eval Candidate",tier:4},
+  {n:"Surgical Equip./Access.",pen:34,cov:31,mkt:843,mktG:15,mmsGP:11,mbGP:4.5,mbGPpct:46.5,mbG:6.4,mbOutMMS:7.1,mmsOutMkt:-15.4,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Surgical Instruments",pen:28,cov:17,mkt:1772,mktG:3,mmsGP:34,mbGP:18.4,mbGPpct:65.4,mbG:1.6,mbOutMMS:0.5,mmsOutMkt:-1.8,f1:"Selective Winner",f2:"MB Champion",tier:2},
+  {n:"Table Paper",pen:94,cov:100,mkt:109,mktG:7,mmsGP:16,mbGP:16.3,mbGPpct:39.0,mbG:3.3,mbOutMMS:0.3,mmsOutMkt:-4.1,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Tapes/Wraps",pen:58,cov:41,mkt:568,mktG:2,mmsGP:30,mbGP:32.2,mbGPpct:72.6,mbG:3.6,mbOutMMS:4.8,mmsOutMkt:-3.0,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Textiles",pen:71,cov:25,mkt:1039,mktG:8,mmsGP:29,mbGP:28.7,mbGPpct:54.4,mbG:0.8,mbOutMMS:2.9,mmsOutMkt:-10.3,f1:"Assortment Leader",f2:"MB Champion",tier:3},
+  {n:"Underpads, Pads & Liners",pen:40,cov:33,mkt:943,mktG:4,mmsGP:32,mbGP:27.3,mbGPpct:47.4,mbG:4.3,mbOutMMS:2.8,mmsOutMkt:-2.3,f1:"Assortment Leader",f2:"MB Champion",tier:2},
+  {n:"Urology",pen:11,cov:20,mkt:1240,mktG:11,mmsGP:26,mbGP:8.2,mbGPpct:66.9,mbG:10.9,mbOutMMS:5.2,mmsOutMkt:-5.7,f1:"Untapped Potential",f2:"MB Champion",tier:1},
+  {n:"Wound Closure",pen:21,cov:20,mkt:2715,mktG:1,mmsGP:38,mbGP:14.7,mbGPpct:59.7,mbG:4.8,mbOutMMS:7.5,mmsOutMkt:-3.5,f1:"Untapped Potential",f2:"MB Champion",tier:2},
 ];
 
-const TIER_COLORS = {1:"#1e40af",2:"#0891b2",3:"#6d28d9",4:"#94a3b8"};
-const TIER_LABELS = {1:"Tier 1 – Invest",2:"Tier 2 – Build",3:"Tier 3 – Maintain",4:"Tier 4 – Monitor"};
-const F2_COLORS = {"MB Champion":"#16a34a","Strategy Star":"#d97706","Oppty Gap":"#dc2626","Eval Candidate":"#6b7280"};
-const TABS = ["Strategic Matrix","Portfolio Map","GP Ranking","Data Table"];
-const fmt = (v,dec=1) => (v===null||v===undefined)?"—":Number(v).toFixed(dec);
+const TC={1:"#1e40af",2:"#0891b2",3:"#6d28d9",4:"#94a3b8"};
+const TL={1:"Tier 1 – Invest",2:"Tier 2 – Build",3:"Tier 3 – Maintain",4:"Tier 4 – Monitor"};
+const FC={"MB Champion":"#16a34a","Strategy Star":"#d97706","Oppty Gap":"#dc2626","Eval Candidate":"#6b7280"};
+const TABS=["Strategic Matrix","Portfolio Map","GP Ranking","Data Table"];
+const fmt=(v,d=1)=>v==null?"—":Number(v).toFixed(d);
+const mktFmt=m=>m>=1000?(m/1000).toFixed(1)+"B":m+"M";
 
-const MatrixTooltip = ({active,payload}) => {
-  if(!active||!payload?.length) return null;
-  const d = payload[0].payload;
-  return (
-    <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"10px 14px",color:"#e2e8f0",fontSize:12,maxWidth:240}}>
-      <div style={{fontWeight:700,marginBottom:4,color:"#f8fafc"}}>{d.n}</div>
-      <div>Tier {d.tier} | {d.f2}</div>
-      <div style={{marginTop:6,display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
-        <span>MB GP: <b>${fmt(d.mbGP)}M</b></span>
-        <span>Mkt: <b>${d.mkt}M</b></span>
-        <span>MB Growth: <b>{fmt(d.mbG)}%</b></span>
-        <span>MB GP%: <b>{fmt(d.mbGPpct)}%</b></span>
-        <span>Penetration: <b>{d.pen}%</b></span>
-        <span>Coverage: <b>{d.cov}%</b></span>
-      </div>
-    </div>
-  );
-};
+let state={tab:0,tiers:[1,2,3,4],colorBy:"tier",sortCol:"mbGP",sortDir:-1,search:""};
 
-function App() {
-  const [tab,setTab] = useState(0);
-  const [selectedTiers,setSelectedTiers] = useState([1,2,3,4]);
-  const [colorBy,setColorBy] = useState("tier");
-  const [sortCol,setSortCol] = useState("mbGP");
-  const [sortDir,setSortDir] = useState(-1);
-  const [search,setSearch] = useState("");
+function getColor(d){return state.colorBy==="tier"?TC[d.tier]:FC[d.f2]||"#6b7280";}
+function filtered(){return RAW.filter(d=>state.tiers.includes(d.tier)&&d.n.toLowerCase().includes(state.search.toLowerCase()));}
 
-  const toggleTier = t => setSelectedTiers(prev=>prev.includes(t)?prev.filter(x=>x!==t):[...prev,t]);
-  const filtered = useMemo(()=>RAW.filter(d=>selectedTiers.includes(d.tier)&&d.n.toLowerCase().includes(search.toLowerCase())),[selectedTiers,search]);
-  const tier1 = RAW.filter(d=>d.tier===1);
-  const sorted = useMemo(()=>[...filtered].sort((a,b)=>sortDir*(a[sortCol]-b[sortCol])),[filtered,sortCol,sortDir]);
-  const handleSort = col=>{setSortCol(col);setSortDir(prev=>sortCol===col?-prev:-1);};
-  const gpData = useMemo(()=>[...RAW].filter(d=>selectedTiers.includes(d.tier)).sort((a,b)=>b.mbGP-a.mbGP).slice(0,25),[selectedTiers]);
-
-  return (
-    <div style={{background:"#0f172a",minHeight:"100vh",fontFamily:"system-ui,sans-serif",color:"#e2e8f0",padding:"16px"}}>
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:20,fontWeight:800,color:"#f8fafc"}}>McKesson Brands — Level 2 Category Prioritization</div>
-        <div style={{fontSize:13,color:"#94a3b8",marginTop:2}}>Project Moneyball · {RAW.length} categories · FY23–25 data</div>
-      </div>
-
-      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:14,alignItems:"center"}}>
-        <div style={{display:"flex",gap:6}}>
-          {[1,2,3,4].map(t=>(
-            <button key={t} onClick={()=>toggleTier(t)} style={{padding:"4px 12px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
-              background:selectedTiers.includes(t)?TIER_COLORS[t]:"#334155",color:selectedTiers.includes(t)?"#fff":"#94a3b8"}}>
-              T{t}
-            </button>
-          ))}
-        </div>
-        {tab<3&&(
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:12,color:"#94a3b8"}}>Color by:</span>
-            {["tier","f2"].map(k=>(
-              <button key={k} onClick={()=>setColorBy(k)} style={{padding:"3px 10px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,
-                background:colorBy===k?"#3b82f6":"#334155",color:"#fff"}}>
-                {k==="tier"?"Tier":"Strategy"}
-              </button>
-            ))}
-          </div>
-        )}
-        {tab===3&&(
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search category…"
-            style={{background:"#1e293b",border:"1px solid #334155",borderRadius:6,padding:"4px 10px",color:"#e2e8f0",fontSize:12,width:180}}/>
-        )}
-      </div>
-
-      <div style={{display:"flex",gap:2,marginBottom:14,borderBottom:"1px solid #1e293b"}}>
-        {TABS.map((t,i)=>(
-          <button key={i} onClick={()=>setTab(i)} style={{padding:"8px 16px",background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,
-            color:tab===i?"#38bdf8":"#64748b",borderBottom:tab===i?"2px solid #38bdf8":"2px solid transparent"}}>
-            {t}
-          </button>
-        ))}
-      </div>
-
-      {tab<2&&(
-        <div style={{display:"flex",flexWrap:"wrap",gap:12,marginBottom:12}}>
-          {colorBy==="tier"?Object.entries(TIER_LABELS).map(([t,l])=>(
-            <div key={t} style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:TIER_COLORS[t]}}/>
-              <span style={{color:"#94a3b8"}}>{l}</span>
-            </div>
-          )):Object.entries(F2_COLORS).map(([k,c])=>(
-            <div key={k} style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:c}}/>
-              <span style={{color:"#94a3b8"}}>{k}</span>
-            </div>
-          ))}
-          <span style={{fontSize:11,color:"#64748b"}}>● Bubble size = MB GP $M</span>
-        </div>
-      )}
-
-      {tab===0&&(
-        <div>
-          <div style={{fontSize:13,color:"#94a3b8",marginBottom:8}}>
-            <b style={{color:"#e2e8f0"}}>Strategic Growth Matrix</b> — X: MMS growth vs. market | Y: MB growth vs. NB | Bubble = MB GP $M
-          </div>
-          <div style={{background:"#1e293b",borderRadius:12,padding:"12px 4px 4px 4px"}}>
-            <ResponsiveContainer width="100%" height={480}>
-              <ScatterChart margin={{top:10,right:30,bottom:40,left:30}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155"/>
-                <XAxis type="number" dataKey="mmsOutMkt" unit="%" tick={{fill:"#94a3b8",fontSize:11}}
-                  label={{value:"MMS Growth − Market Growth (%)",fill:"#94a3b8",fontSize:11,position:"insideBottom",offset:-25}} domain={[-25,15]}/>
-                <YAxis type="number" dataKey="mbOutMMS" unit="%" tick={{fill:"#94a3b8",fontSize:11}}
-                  label={{value:"MB Growth − NB Growth (%)",fill:"#94a3b8",fontSize:11,angle:-90,position:"insideLeft",offset:10}} domain={[-40,45]}/>
-                <ReferenceLine x={0} stroke="#475569" strokeDasharray="4 4"/>
-                <ReferenceLine y={0} stroke="#475569" strokeDasharray="4 4"/>
-                <Tooltip content={<MatrixTooltip/>}/>
-                <Scatter data={filtered} shape={(props)=>{
-                  const {cx,cy,payload}=props;
-                  if(!cx||!cy) return null;
-                  const color=colorBy==="tier"?TIER_COLORS[payload.tier]:F2_COLORS[payload.f2]||"#6b7280";
-                  const r=Math.max(4,Math.min(22,Math.sqrt(payload.mbGP)*1.8));
-                  return <circle cx={cx} cy={cy} r={r} fill={color} fillOpacity={0.75} stroke={color} strokeWidth={1.5}/>;
-                }}/>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{marginTop:14,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
-            {tier1.map(d=>(
-              <div key={d.n} style={{background:"#1e293b",borderRadius:8,padding:"8px 12px",borderLeft:`3px solid ${TIER_COLORS[1]}`}}>
-                <div style={{fontSize:12,fontWeight:700,color:"#f8fafc",marginBottom:4}}>{d.n}</div>
-                <div style={{display:"flex",gap:8,fontSize:11,color:"#94a3b8"}}>
-                  <span>MB GP: <b style={{color:"#e2e8f0"}}>${fmt(d.mbGP)}M</b></span>
-                  <span>Mkt: <b style={{color:"#e2e8f0"}}>${d.mkt>=1000?(d.mkt/1000).toFixed(1)+"B":d.mkt+"M"}</b></span>
-                </div>
-                <div style={{fontSize:11,marginTop:2}}>
-                  <span style={{color:F2_COLORS[d.f2]||"#6b7280"}}>{d.f2}</span>
-                  <span style={{color:"#64748b",marginLeft:6}}>{d.f1}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {tab===1&&(
-        <div>
-          <div style={{fontSize:13,color:"#94a3b8",marginBottom:8}}>
-            <b style={{color:"#e2e8f0"}}>Portfolio Coverage vs. Sales Penetration</b> — X: Coverage % | Y: Penetration % | Bubble = Total Market $M
-          </div>
-          <div style={{background:"#1e293b",borderRadius:12,padding:"12px 4px 4px 4px"}}>
-            <ResponsiveContainer width="100%" height={480}>
-              <ScatterChart margin={{top:10,right:30,bottom:40,left:30}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155"/>
-                <XAxis type="number" dataKey="cov" unit="%" tick={{fill:"#94a3b8",fontSize:11}}
-                  label={{value:"Portfolio Coverage % (distinct SKUs at L4)",fill:"#94a3b8",fontSize:11,position:"insideBottom",offset:-25}} domain={[0,105]}/>
-                <YAxis type="number" dataKey="pen" unit="%" tick={{fill:"#94a3b8",fontSize:11}}
-                  label={{value:"Sales Penetration %",fill:"#94a3b8",fontSize:11,angle:-90,position:"insideLeft",offset:10}} domain={[0,100]}/>
-                <ReferenceLine x={40} stroke="#475569" strokeDasharray="4 4"/>
-                <ReferenceLine y={35} stroke="#475569" strokeDasharray="4 4"/>
-                <Tooltip content={<MatrixTooltip/>}/>
-                <Scatter data={filtered} shape={(props)=>{
-                  const {cx,cy,payload}=props;
-                  if(!cx||!cy) return null;
-                  const color=colorBy==="tier"?TIER_COLORS[payload.tier]:F2_COLORS[payload.f2]||"#6b7280";
-                  const r=Math.max(4,Math.min(22,Math.sqrt(payload.mkt)*0.55));
-                  return <circle cx={cx} cy={cy} r={r} fill={color} fillOpacity={0.75} stroke={color} strokeWidth={1.5}/>;
-                }}/>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {tab===2&&(
-        <div>
-          <div style={{fontSize:13,color:"#94a3b8",marginBottom:10}}>
-            <b style={{color:"#e2e8f0"}}>MB Gross Profit Ranking</b> — Top 25 by MB GP $M vs. MMS GP
-          </div>
-          <div style={{background:"#1e293b",borderRadius:12,padding:"16px 8px 8px 8px"}}>
-            <ResponsiveContainer width="100%" height={520}>
-              <BarChart data={gpData} layout="vertical" margin={{top:0,right:80,bottom:10,left:160}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false}/>
-                <XAxis type="number" tick={{fill:"#94a3b8",fontSize:10}} unit="M"/>
-                <YAxis type="category" dataKey="n" tick={{fill:"#cbd5e1",fontSize:11}} width={158}/>
-                <Tooltip formatter={(v,n)=>[`$${fmt(v)}M`,n==="mbGP"?"MB GP":"MMS GP"]} contentStyle={{background:"#1e293b",border:"1px solid #334155",fontSize:12}}/>
-                <Legend wrapperStyle={{fontSize:12,color:"#94a3b8"}} iconSize={10}/>
-                <Bar dataKey="mmsGP" name="MMS GP" fill="#334155" radius={[0,3,3,0]}/>
-                <Bar dataKey="mbGP" name="MB GP" radius={[0,3,3,0]}>
-                  {gpData.map((d,i)=><Cell key={i} fill={colorBy==="tier"?TIER_COLORS[d.tier]:F2_COLORS[d.f2]||"#6b7280"}/>)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{marginTop:10,fontSize:11,color:"#64748b"}}>Gray bars = MMS (total McKesson) GP | Colored bars = McKesson Brands GP</div>
-        </div>
-      )}
-
-      {tab===3&&(
-        <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-            <thead>
-              <tr style={{background:"#1e293b"}}>
-                {[["n","Category"],["tier","Tier"],["f1","F1"],["f2","F2"],["mkt","Mkt $M"],["mktG","Mkt G%"],["pen","Pen%"],["cov","Cov%"],["mmsGP","MMS GP"],["mbGP","MB GP"],["mbGPpct","MB GP%"],["mbG","MB G%"],["mbOutMMS","MB vs NB"]].map(([k,l])=>(
-                  <th key={k} onClick={()=>handleSort(k)}
-                    style={{padding:"8px 10px",textAlign:"left",cursor:"pointer",color:sortCol===k?"#38bdf8":"#94a3b8",whiteSpace:"nowrap",fontWeight:600,userSelect:"none"}}>
-                    {l}{sortCol===k?(sortDir>0?" ▲":" ▼"):""}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((d,i)=>(
-                <tr key={d.n} style={{background:i%2===0?"#0f172a":"#131d2e",borderBottom:"1px solid #1e293b"}}>
-                  <td style={{padding:"6px 10px",fontWeight:600,color:"#e2e8f0"}}>{d.n}</td>
-                  <td><span style={{background:TIER_COLORS[d.tier],borderRadius:12,padding:"2px 8px",fontWeight:700,color:"#fff",fontSize:10}}>T{d.tier}</span></td>
-                  <td style={{color:"#94a3b8",fontSize:10}}>{d.f1}</td>
-                  <td><span style={{color:F2_COLORS[d.f2]||"#6b7280",fontWeight:600}}>{d.f2}</span></td>
-                  <td>${d.mkt>=1000?(d.mkt/1000).toFixed(1)+"B":d.mkt+"M"}</td>
-                  <td style={{color:d.mktG>=5?"#4ade80":d.mktG<0?"#f87171":"#e2e8f0"}}>{fmt(d.mktG)}%</td>
-                  <td>{d.pen}%</td>
-                  <td>{d.cov}%</td>
-                  <td>${fmt(d.mmsGP)}M</td>
-                  <td style={{fontWeight:700,color:"#38bdf8"}}>${fmt(d.mbGP)}M</td>
-                  <td style={{color:d.mbGPpct>=60?"#4ade80":"#e2e8f0"}}>{fmt(d.mbGPpct)}%</td>
-                  <td style={{color:d.mbG>=5?"#4ade80":d.mbG<-5?"#f87171":"#e2e8f0"}}>{fmt(d.mbG)}%</td>
-                  <td style={{color:d.mbOutMMS>=0?"#4ade80":"#f87171"}}>{fmt(d.mbOutMMS)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
+function render(){
+  renderControls();
+  renderTabs();
+  renderLegend();
+  renderContent();
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-  </script>
+function renderControls(){
+  const el=document.getElementById("controls");
+  let h=`<div style="display:flex;gap:5px">`;
+  [1,2,3,4].forEach(t=>{
+    const on=state.tiers.includes(t);
+    h+=`<button class="ctrl-btn" onclick="toggleTier(${t})" style="background:${on?TC[t]:"#334155"};color:${on?"#fff":"#94a3b8"}">${TL[t].split("–")[0].trim()}</button>`;
+  });
+  h+=`</div><div style="display:flex;gap:5px;align-items:center">`;
+  if(state.tab<3){
+    h+=`<span style="font-size:11px;color:#64748b">Color:</span>`;
+    ["tier","f2"].forEach(k=>{
+      h+=`<button class="ctrl-btn" onclick="setColor('${k}')" style="background:${state.colorBy===k?"#3b82f6":"#334155"};color:#fff">${k==="tier"?"Tier":"Strategy"}</button>`;
+    });
+  }
+  if(state.tab===3){
+    h+=`<input value="${state.search}" oninput="setSearch(this.value)" placeholder="Search…" style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:4px 10px;color:#e2e8f0;font-size:12px;width:160px">`;
+  }
+  h+=`</div>`;
+  el.innerHTML=h;
+}
+
+function renderTabs(){
+  const el=document.getElementById("tabs");
+  el.innerHTML=TABS.map((t,i)=>`<button class="tab-btn" onclick="setTab(${i})" style="color:${state.tab===i?"#38bdf8":"#64748b"};border-bottom:2px solid ${state.tab===i?"#38bdf8":"transparent"}">${t}</button>`).join("");
+}
+
+function renderLegend(){
+  const el=document.getElementById("legend");
+  if(state.tab>=2){el.innerHTML="";return;}
+  const entries=state.colorBy==="tier"?Object.entries(TL).map(([k,l])=>[TC[k],l]):Object.entries(FC);
+  el.innerHTML=entries.map(([c,l])=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:${c}"></div><span style="color:#94a3b8">${l}</span></div>`).join("")+`<span style="color:#475569">● size = GP $M</span>`;
+}
+
+function renderContent(){
+  const el=document.getElementById("content");
+  if(state.tab===0) el.innerHTML=renderMatrix();
+  else if(state.tab===1) el.innerHTML=renderPortfolio();
+  else if(state.tab===2) el.innerHTML=renderGP();
+  else el.innerHTML=renderTable();
+  if(state.tab===0||state.tab===1) attachSVGTooltips();
+}
+
+// ---- SCATTER CHART (SVG) ----
+function scatterSVG(data, xKey, yKey, xDomain, yDomain, xLabel, yLabel, bubbleKey, refX, refY){
+  const W=800,H=440,ml=55,mr=20,mt=15,mb=50;
+  const cw=W-ml-mr, ch=H-mt-mb;
+  const xs=(v)=>ml+((v-xDomain[0])/(xDomain[1]-xDomain[0]))*cw;
+  const ys=(v)=>mt+ch-((v-yDomain[0])/(yDomain[1]-yDomain[0]))*ch;
+
+  // grid
+  let grid="";
+  for(let i=0;i<=5;i++){
+    const x=ml+i*cw/5, y=mt+i*ch/5;
+    grid+=`<line x1="${x}" y1="${mt}" x2="${x}" y2="${mt+ch}" stroke="#334155" stroke-dasharray="3,3"/>`;
+    grid+=`<line x1="${ml}" y1="${y}" x2="${ml+cw}" y2="${y}" stroke="#334155" stroke-dasharray="3,3"/>`;
+  }
+  // axes ticks
+  let ticks="";
+  const xSteps=xDomain[1]-xDomain[0], xTickN=6;
+  for(let i=0;i<=xTickN;i++){
+    const v=xDomain[0]+i*xSteps/xTickN;
+    const x=xs(v);
+    ticks+=`<text x="${x}" y="${mt+ch+14}" text-anchor="middle" fill="#64748b" font-size="10">${v.toFixed(0)}%</text>`;
+  }
+  const ySteps=yDomain[1]-yDomain[0], yTickN=6;
+  for(let i=0;i<=yTickN;i++){
+    const v=yDomain[0]+i*ySteps/yTickN;
+    const y=ys(v);
+    ticks+=`<text x="${ml-6}" y="${y+3}" text-anchor="end" fill="#64748b" font-size="10">${v.toFixed(0)}%</text>`;
+  }
+  // ref lines
+  const rx=xs(refX), ry=ys(refY);
+  const refs=`<line x1="${rx}" y1="${mt}" x2="${rx}" y2="${mt+ch}" stroke="#475569" stroke-dasharray="4,4"/>
+    <line x1="${ml}" y1="${ry}" x2="${ml+cw}" y2="${ry}" stroke="#475569" stroke-dasharray="4,4"/>`;
+  // bubbles
+  const maxBubble=Math.max(...data.map(d=>Math.abs(d[bubbleKey]||0)));
+  let bubbles="";
+  data.forEach((d,i)=>{
+    const x=xs(d[xKey]), y=ys(d[yKey]);
+    if(x<ml||x>ml+cw||y<mt||y>mt+ch) return;
+    const r=Math.max(4,Math.min(20,Math.sqrt(Math.abs(d[bubbleKey]||1)/maxBubble)*28));
+    const c=getColor(d);
+    bubbles+=`<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${c}" fill-opacity="0.8" stroke="none" data-i="${i}" style="cursor:pointer"/>`;
+  });
+  // axis labels
+  const axLabels=`<text x="${ml+cw/2}" y="${H-4}" text-anchor="middle" fill="#64748b" font-size="11">${xLabel}</text>
+    <text x="12" y="${mt+ch/2}" text-anchor="middle" fill="#64748b" font-size="11" transform="rotate(-90,12,${mt+ch/2})">${yLabel}</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${grid}${refs}${ticks}${bubbles}${axLabels}</svg>`;
+}
+
+function renderMatrix(){
+  const data=filtered();
+  const svg=scatterSVG(data,"mmsOutMkt","mbOutMMS",[-25,15],[-40,45],"MMS Growth − Market Growth (%)","MB Growth − NB Growth (%)", "mbGP",0,0);
+  const cards=RAW.filter(d=>d.tier===1).map(d=>`
+    <div class="card" style="border-left:3px solid ${TC[1]}">
+      <div style="font-size:11px;font-weight:700;color:#f1f5f9;margin-bottom:3px">${d.n}</div>
+      <div style="font-size:11px;color:#94a3b8">MB GP: <b style="color:#38bdf8">$${fmt(d.mbGP)}M</b> · Mkt: <b style="color:#e2e8f0">$${mktFmt(d.mkt)}</b></div>
+      <div style="font-size:10px;margin-top:2px;color:${FC[d.f2]||"#64748b"}">${d.f2}</div>
+    </div>`).join("");
+  return `<div style="font-size:12px;color:#94a3b8;margin-bottom:8px"><b style="color:#cbd5e1">Growth Matrix</b> · X: MMS outpace market · Y: MB outpace NB · Bubble = MB GP $M</div>
+    <div class="chart-wrap" id="scatter-wrap" data-chart="matrix">${svg}</div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:7px">${cards}</div>`;
+}
+
+function renderPortfolio(){
+  const data=filtered();
+  const svg=scatterSVG(data,"cov","pen",[0,105],[0,100],"Portfolio Coverage %","Sales Penetration %","mkt",40,35);
+  return `<div style="font-size:12px;color:#94a3b8;margin-bottom:8px"><b style="color:#cbd5e1">Portfolio Map</b> · X: Coverage % · Y: Penetration % · Bubble = Market Size $M</div>
+    <div class="chart-wrap" id="scatter-wrap" data-chart="portfolio">${svg}</div>`;
+}
+
+function attachSVGTooltips(){
+  const tip=document.getElementById("tooltip");
+  const wrap=document.getElementById("scatter-wrap");
+  if(!wrap) return;
+  const isMatrix=wrap.dataset.chart==="matrix";
+  const data=filtered();
+  wrap.querySelectorAll(".dot").forEach(dot=>{
+    dot.addEventListener("mousemove",e=>{
+      const i=parseInt(dot.dataset.i);
+      const d=data[i];
+      if(!d) return;
+      tip.style.display="block";
+      tip.innerHTML=`<b style="color:#f8fafc">${d.n}</b><br>
+        <span style="color:${FC[d.f2]||"#94a3b8"}">${d.f2}</span> · Tier ${d.tier}<br><br>
+        MB GP: <b>$${fmt(d.mbGP)}M</b> · MB GP%: <b>${fmt(d.mbGPpct)}%</b><br>
+        Market: <b>$${mktFmt(d.mkt)}</b> · Mkt G: <b>${fmt(d.mktG)}%</b><br>
+        Penetration: <b>${d.pen}%</b> · Coverage: <b>${d.cov}%</b>`;
+      const rect=document.body.getBoundingClientRect();
+      let lft=e.clientX+12, top=e.clientY-10;
+      if(lft+230>window.innerWidth) lft=e.clientX-230;
+      tip.style.left=lft+"px"; tip.style.top=(top+window.scrollY)+"px";
+    });
+    dot.addEventListener("mouseleave",()=>{tip.style.display="none";});
+  });
+}
+
+function renderGP(){
+  const data=[...RAW].filter(d=>state.tiers.includes(d.tier)).sort((a,b)=>b.mbGP-a.mbGP).slice(0,20);
+  const maxVal=Math.max(...data.map(d=>d.mmsGP));
+  const W=700,barH=20,gap=5,ml=160,mr=80,mt=10,mb=20;
+  const H=mt+mb+(barH+gap)*data.length;
+  const xs=v=>(v/maxVal)*(W-ml-mr);
+  let bars="",labels="",vals="";
+  data.forEach((d,i)=>{
+    const y=mt+i*(barH+gap);
+    const bm=xs(d.mmsGP), bb=xs(d.mbGP);
+    const c=getColor(d);
+    bars+=`<rect x="${ml}" y="${y}" width="${bm}" height="${barH}" fill="#334155" rx="2"/>`;
+    bars+=`<rect x="${ml}" y="${y}" width="${bb}" height="${barH}" fill="${c}" fill-opacity="0.85" rx="2"/>`;
+    labels+=`<text x="${ml-6}" y="${y+barH/2+4}" text-anchor="end" fill="#cbd5e1" font-size="10.5">${d.n}</text>`;
+    vals+=`<text x="${ml+Math.max(bm,bb)+5}" y="${y+barH/2+4}" fill="#94a3b8" font-size="10">$${fmt(d.mbGP)}M</text>`;
+  });
+  // x axis ticks
+  let xticks="";
+  for(let i=0;i<=4;i++){
+    const v=(maxVal*i/4), x=ml+xs(v);
+    xticks+=`<text x="${x}" y="${H-4}" text-anchor="middle" fill="#64748b" font-size="9">${fmt(v,0)}M</text>`;
+    xticks+=`<line x1="${x}" y1="${mt}" x2="${x}" y2="${H-mb}" stroke="#1e293b" stroke-width="1"/>`;
+  }
+  return `<div style="font-size:12px;color:#94a3b8;margin-bottom:8px"><b style="color:#cbd5e1">GP Ranking</b> · Top 20 · Gray = MMS GP · Colored = MB GP</div>
+    <div class="chart-wrap">
+      <div style="display:flex;gap:16px;margin-bottom:10px;font-size:11px">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#334155;border-radius:2px;margin-right:4px"></span>MMS GP</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#0891b2;border-radius:2px;margin-right:4px"></span>MB GP</span>
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${xticks}${bars}${labels}${vals}</svg>
+    </div>`;
+}
+
+function renderTable(){
+  const cols=[["n","Category"],["tier","Tier"],["f2","Strategy"],["mkt","Mkt"],["mktG","Mkt G%"],["pen","Pen%"],["cov","Cov%"],["mmsGP","MMS GP"],["mbGP","MB GP"],["mbGPpct","MB GP%"],["mbG","MB G%"],["mbOutMMS","MB vs NB"]];
+  const data=[...filtered()].sort((a,b)=>state.sortDir*(a[state.sortCol]-b[state.sortCol]));
+  const head=cols.map(([k,l])=>`<th onclick="doSort('${k}')" style="color:${state.sortCol===k?"#38bdf8":"#94a3b8"}">${l}${state.sortCol===k?(state.sortDir>0?" ▲":" ▼"):""}</th>`).join("");
+  const rows=data.map((d,i)=>{
+    const bg=i%2===0?"#0f172a":"#111827";
+    return `<tr style="background:${bg}">
+      <td style="font-weight:600;color:#e2e8f0">${d.n}</td>
+      <td><span class="tier-badge" style="background:${TC[d.tier]}">T${d.tier}</span></td>
+      <td style="color:${FC[d.f2]||"#6b7280"};font-weight:600">${d.f2}</td>
+      <td>$${mktFmt(d.mkt)}</td>
+      <td style="color:${d.mktG>=5?"#4ade80":d.mktG<0?"#f87171":"#e2e8f0"}">${fmt(d.mktG)}%</td>
+      <td>${d.pen}%</td><td>${d.cov}%</td>
+      <td>$${fmt(d.mmsGP)}M</td>
+      <td style="font-weight:700;color:#38bdf8">$${fmt(d.mbGP)}M</td>
+      <td style="color:${d.mbGPpct>=60?"#4ade80":"#e2e8f0"}">${fmt(d.mbGPpct)}%</td>
+      <td style="color:${d.mbG>=5?"#4ade80":d.mbG<-5?"#f87171":"#e2e8f0"}">${fmt(d.mbG)}%</td>
+      <td style="color:${d.mbOutMMS>=0?"#4ade80":"#f87171"}">${fmt(d.mbOutMMS)}%</td>
+    </tr>`;
+  }).join("");
+  return `<div style="overflow-x:auto"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function setTab(i){state.tab=i;render();}
+function toggleTier(t){state.tiers=state.tiers.includes(t)?state.tiers.filter(x=>x!==t):[...state.tiers,t];render();}
+function setColor(v){state.colorBy=v;render();}
+function setSearch(v){state.search=v;renderContent();}
+function doSort(c){state.sortDir=state.sortCol===c?-state.sortDir:-1;state.sortCol=c;renderContent();}
+
+render();
+</script>
 </body>
 </html>
